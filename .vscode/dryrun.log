@@ -1,5 +1,0 @@
-make --dry-run --keep-going --print-directory
-make: Entering directory '/home/darkdulgi/Documents/fs'
-gcc -o FileSystem.out main.c fs.c disk.c
-make: Leaving directory '/home/darkdulgi/Documents/fs'
- 
