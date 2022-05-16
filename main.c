@@ -9,7 +9,16 @@ int main() {
     FileSysInit();
     inodenum = GetFreeInodeNum();
 
-    
+    SetInodeBytemap(inodenum);
+    blknum = GetFreeBlockNum();
+    SetBlockBytemap(blknum);
+    inode.size = 0;
+    inode.allocBlocks = 0;
 
+    //...
+
+    PutInode(inodenum, &inode);
+    pInode = malloc(sizeof(Inode));
+    GetInode(inodenum, pInode);
     return 0;
 }

@@ -20,6 +20,7 @@ void FileSysInit() {
 }
 
 void SetInodeBytemap(int inodeno) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     DevReadBlock(1, ptr);
     *(ptr + inodeno) = 1;
@@ -28,6 +29,7 @@ void SetInodeBytemap(int inodeno) {
 }
 
 void ResetInodeBytemap(int inodeno) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     DevReadBlock(1, ptr);
     *(ptr + inodeno) = 0;
@@ -36,6 +38,7 @@ void ResetInodeBytemap(int inodeno) {
 }
 
 void SetBlockBytemap(int blkno) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     DevReadBlock(2, ptr);
     *(ptr + blkno) = 1;
@@ -44,6 +47,7 @@ void SetBlockBytemap(int blkno) {
 }
 
 void ResetBlockBytemap(int blkno) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     DevReadBlock(2, ptr);
     *(ptr + blkno) = 0;
@@ -52,6 +56,7 @@ void ResetBlockBytemap(int blkno) {
 }
 
 void PutInode(int inodeno, Inode* pInode) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     int blknum = inodeno / 16 + 3;
     DevReadBlock(blknum, ptr);
@@ -61,6 +66,7 @@ void PutInode(int inodeno, Inode* pInode) {
 }
 
 void GetInode(int inodeno, Inode* pInode) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     int blknum = inodeno / 16 + 3;
     DevReadBlock(blknum, ptr);
@@ -69,6 +75,7 @@ void GetInode(int inodeno, Inode* pInode) {
 }
 
 int GetFreeInodeNum(void) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     DevReadBlock(1, ptr);
     for (int i = 0; i < BLOCK_SIZE; i++) {
@@ -82,6 +89,7 @@ int GetFreeInodeNum(void) {
 }
 
 int GetFreeBlockNum(void) {
+    DevOpenDisk();
     char* ptr = malloc(BLOCK_SIZE);
     DevReadBlock(2, ptr);
     for (int i = 0; i < BLOCK_SIZE; i++) {
@@ -95,13 +103,36 @@ int GetFreeBlockNum(void) {
 }
 
 void PutIndirectBlockEntry(int blkno, int index, int number) {
+    DevOpenDisk();
+    int* ptr = malloc(BLOCK_SIZE);
+    DevReadBlock(blkno, (char*)ptr);
+    *(ptr + index) = number;
+    DevWriteBlock(blkno, (char*)ptr);
+    free(ptr);
 }
 
 int GetIndirectBlockEntry(int blkno, int index) {
+    DevOpenDisk();
+    int* ptr = malloc(BLOCK_SIZE);
+    DevReadBlock(blkno, (char*)ptr);
+    int rt = *(ptr + index);
+    free(ptr);
+    return rt;
 }
 
 void PutDirEntry(int blkno, int index, DirEntry* pEntry) {
+    DevOpenDisk();
+    DirEntry* ptr = malloc(BLOCK_SIZE);
+    DevReadBlock(blkno, (char*)ptr);
+    memcpy(ptr + index, pEntry, sizeof(DirEntry));
+    DevWriteBlock(blkno, ptr);
+    free(ptr);
 }
 
 void GetDirEntry(int blkno, int index, DirEntry* pEntry) {
+    DevOpenDisk();
+    DirEntry* ptr = malloc(BLOCK_SIZE);
+    DevReadBlock(blkno, (char*)ptr);
+    memcpy(pEntry, ptr + index, sizeof(DirEntry));
+    free(ptr);
 }
