@@ -20,5 +20,6 @@ int main() {
     PutInode(inodenum, &inode);
     pInode = malloc(sizeof(Inode));
     GetInode(inodenum, pInode);
+    printf("Complete\n");
     return 0;
 }

@@ -18,7 +18,7 @@
 #define INODELIST_BLOCK_FIRST   (3) /* the first block no. of inode list */
 #define INODELIST_BLOCKS        (4) /* the number of blocks in inode list */
 
-
+#define INVALID_ENTRY		(-1) 
 // ----------------------------------------------------------
 
 
@@ -48,8 +48,9 @@ int GetFreeInodeNum(void);
 int GetFreeBlockNum(void);
 void PutIndirectBlockEntry(int blkno, int index, int number);
 int GetIndirectBlockEntry(int blkno, int index);
+void RemoveIndirectBlockEntry(int blkno, int index);
 void PutDirEntry(int blkno, int index, DirEntry* pEntry);
-void GetDirEntry(int blkno, int index, DirEntry* pEntry);
-
+int GetDirEntry(int blkno, int index, DirEntry* pEntry);
+void RemoveDirEntry(int blkno, int index);
 
 #endif /* FILESYSTEM_H_ */

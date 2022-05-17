@@ -8,12 +8,12 @@
 
 void FileSysInit() {
     DevCreateDisk();
-    char* ptr = malloc(BLOCK_SIZE * 7);
+    char* ptr = malloc(FS_DISK_CAPACITY);
     for (int i = 0; i <= BLOCK_SIZE * 7; i++) {
         *(ptr + i) = 0;
     }
 
-    for (int blk = 0; blk <= 6; blk++) {
+    for (int blk = 0; blk < FS_DISK_CAPACITY / BLOCK_SIZE; blk++) {
         DevWriteBlock(blk, ptr + BLOCK_SIZE * blk);
     }
     free(ptr);
@@ -120,6 +120,15 @@ int GetIndirectBlockEntry(int blkno, int index) {
     return rt;
 }
 
+void RemoveIndirectBlockEntry(int blkno, int index){
+    DevOpenDisk();
+    int* ptr = malloc(BLOCK_SIZE);
+    DevReadBlock(blkno, (char*)ptr);
+    *(ptr + index) = INVALID_ENTRY;
+    DevWriteBlock(blkno, (char*)ptr);
+    free(ptr);
+}
+
 void PutDirEntry(int blkno, int index, DirEntry* pEntry) {
     DevOpenDisk();
     DirEntry* ptr = malloc(BLOCK_SIZE);
@@ -129,10 +138,21 @@ void PutDirEntry(int blkno, int index, DirEntry* pEntry) {
     free(ptr);
 }
 
-void GetDirEntry(int blkno, int index, DirEntry* pEntry) {
+int GetDirEntry(int blkno, int index, DirEntry* pEntry) {
     DevOpenDisk();
     DirEntry* ptr = malloc(BLOCK_SIZE);
     DevReadBlock(blkno, (char*)ptr);
+    int rt = (ptr + index)->inodeNum == -1 ? -1 : 1;
     memcpy(pEntry, ptr + index, sizeof(DirEntry));
+    free(ptr);
+    return rt;
+}
+
+void RemoveDirEntry(int blkno, int index){
+    DevOpenDisk();
+    DirEntry* ptr = malloc(BLOCK_SIZE);
+    DevReadBlock(blkno, (char*)ptr);
+    (ptr + index) -> inodeNum = -1;
+    DevWriteBlock(blkno, ptr);
     free(ptr);
 }
