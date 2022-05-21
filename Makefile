@@ -1,3 +1,4 @@
 default: build
 build:
-	gcc -o FileSystem.out main.c fs.c disk.c
+	gcc -c *.c 
+	gcc -no-pie -o Filesystem.out *.o 
