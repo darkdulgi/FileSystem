@@ -1,8 +1,7 @@
-#include "fs.h"
+#include "hw1.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "disk.h"
 
 void FileSysInit()
@@ -93,7 +92,7 @@ int GetFreeBlockNum(void)
 {
     char *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(2, ptr);
-    for (int i = 0; i < BLOCK_SIZE; i++)
+    for (int i = 7; i < BLOCK_SIZE; i++)
     {
         if (*(ptr + i) == 0)
         {
