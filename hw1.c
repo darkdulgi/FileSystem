@@ -144,7 +144,7 @@ int GetDirEntry(int blkno, int index, DirEntry *pEntry)
 {
     DirEntry *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(blkno, (char *)ptr);
-    int rt = (ptr + index)->inodeNum == -1 ? -1 : 1;
+    int rt = (ptr + index)->inodeNum == INVALID_ENTRY ? INVALID_ENTRY : 1;
     memcpy(pEntry, ptr + index, sizeof(DirEntry));
     free(ptr);
     return rt;
@@ -154,7 +154,7 @@ void RemoveDirEntry(int blkno, int index)
 {
     DirEntry *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(blkno, (char *)ptr);
-    (ptr + index)->inodeNum = -1;
+    (ptr + index)->inodeNum = INVALID_ENTRY;
     DevWriteBlock(blkno, ptr);
     free(ptr);
 }

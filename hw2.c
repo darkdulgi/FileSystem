@@ -3,6 +3,7 @@
 #include "disk.h"
 #include "hw1.h"
 #include "hw2.h"
+#include <string.h>
 
 FileDescTable *pFileDescTable;
 FileSysInfo *pFileSysInfo;
@@ -29,6 +30,20 @@ int RemoveFile(char *name)
 
 int MakeDirectory(char *name)
 {
+    int newinodenum = GetFreeInodeNum();
+    int newblocknum = GetFreeBlockNum();
+    Inode* pinode;
+    GetInode(0,pinode);
+
+    char *nameread = strtok(name, "/");
+    while (nameread != NULL){
+        int curblocknum = pinode->dirBlockPtr[0];
+        
+
+        
+        nameread = strtok(NULL, "/");
+    }
+    return 0;
 }
 
 int RemoveDirectory(char *name)
@@ -38,12 +53,15 @@ int RemoveDirectory(char *name)
 void CreateFileSystem(void)
 {
     FileSysInit();
+    
     DirEntry *ptr = malloc(BLOCK_SIZE);
-    ptr[0].name = ".";
+    strcpy(ptr[0].name, ".");
     ptr[0].inodeNum = 0;
+    for(int i = 1; i < 16; i++) ptr[i].inodeNum = INVALID_ENTRY;
     DevWriteBlock(7, ptr);
     free(ptr);
 
+    
     FileSysInfo* info = malloc(BLOCK_SIZE);
     info->blocks = 512;
     info->rootInodeNum = 0;
@@ -54,24 +72,25 @@ void CreateFileSystem(void)
     info->blockBytemapBlock = 2;
     info->inodeBytemapBlock = 1;
     info->inodeListBlock = 3;
-
+    info->dataRegionBlock = 7;
+    
     info->numAllocBlocks++;
     info->numFreeBlocks--;
     info->numAllocInodes++;
 
     DevWriteBlock(0,info);
-    free(info);
-
+    
     SetBlockBytemap(7);
     SetInodeBytemap(0);
+    
+    Inode* pinode;
+    GetInode(0, pinode);
+    pinode->dirBlockPtr[0] = 7;
+    pinode->allocBlocks = 1;
+    pinode->size = 512;
+    PutInode(0, pinode);
 
-    Inode inode;
-    GetInode(0, &inode);
-    inode.dirBlockPtr[0] = 7;
-    inode.allocBlocks = 1;
-    inode.size = 512;
-    PutInode(0, &inode);
-
+    free(info);
 }
 void OpenFileSystem(void)
 {
