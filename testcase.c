@@ -7,8 +7,20 @@
 int main(void)
 {
     CreateFileSystem();
+    printf("test start\n");
 
-    char name[30] = "/tmp";
-    MakeDirectory(name);
+    while (1) {
+        char name[30];
+        scanf("%s",name);
+
+        if (MakeDirectory(name) != 0)
+        {
+            printf("making directory failed\n");
+        }
+        else
+        {
+            printf("Success\n");
+        }
+    }
     return 0;
 }

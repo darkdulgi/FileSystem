@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "disk.h"
+#include "hw2.h"
 
 void FileSysInit()
 {
@@ -21,7 +22,7 @@ void SetInodeBytemap(int inodeno)
 {
     char *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(1, ptr);
-    *(ptr + inodeno) = 1;
+    ptr[inodeno] = 1;
     DevWriteBlock(1, ptr);
     free(ptr);
 }
@@ -30,7 +31,7 @@ void ResetInodeBytemap(int inodeno)
 {
     char *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(1, ptr);
-    *(ptr + inodeno) = 0;
+    ptr[inodeno] = 0;
     DevWriteBlock(1, ptr);
     free(ptr);
 }
@@ -39,7 +40,7 @@ void SetBlockBytemap(int blkno)
 {
     char *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(2, ptr);
-    *(ptr + blkno) = 1;
+    ptr[blkno] = 1;
     DevWriteBlock(2, ptr);
     free(ptr);
 }
@@ -48,27 +49,27 @@ void ResetBlockBytemap(int blkno)
 {
     char *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(2, ptr);
-    *(ptr + blkno) = 0;
+    ptr[blkno] = 0;
     DevWriteBlock(2, ptr);
     free(ptr);
 }
 
-void PutInode(int inodeno, Inode *pInode)
+void PutInode(int inodeno, Inode *pInode)   // 디스크에 inode를 저장한다.
 {
-    char *ptr = malloc(BLOCK_SIZE);
+    Inode *ptr = malloc(BLOCK_SIZE);
     int blknum = inodeno / 16 + 3;
     DevReadBlock(blknum, ptr);
-    memcpy(ptr + inodeno % 16 * 32, pInode, sizeof(Inode));
+    memcpy(ptr + inodeno % 16, pInode, sizeof(Inode));
     DevWriteBlock(blknum, ptr);
     free(ptr);
 }
 
-void GetInode(int inodeno, Inode *pInode)
+void GetInode(int inodeno, Inode *pInode)   // 지정한 주소로 inode를 가져온다.
 {
-    char *ptr = malloc(BLOCK_SIZE);
+    Inode *ptr = malloc(BLOCK_SIZE);
     int blknum = inodeno / 16 + 3;
     DevReadBlock(blknum, ptr);
-    memcpy(pInode, ptr + inodeno % 16 * 32, sizeof(Inode));
+    memcpy(pInode, ptr + inodeno % 16, sizeof(Inode));
     free(ptr);
 }
 
@@ -76,9 +77,9 @@ int GetFreeInodeNum(void)
 {
     char *ptr = malloc(BLOCK_SIZE);
     DevReadBlock(1, ptr);
-    for (int i = 0; i < BLOCK_SIZE; i++)
+    for (int i = 0; i < 64; i++)    // 최대 inode는 64개
     {
-        if (*(ptr + i) == 0)
+        if (ptr[i] == 0)
         {
             free(ptr);
             return i;
@@ -94,7 +95,7 @@ int GetFreeBlockNum(void)
     DevReadBlock(2, ptr);
     for (int i = 7; i < BLOCK_SIZE; i++)
     {
-        if (*(ptr + i) == 0)
+        if (ptr[i] == 0)
         {
             free(ptr);
             return i;
@@ -131,30 +132,35 @@ void RemoveIndirectBlockEntry(int blkno, int index)
     free(ptr);
 }
 
-void PutDirEntry(int blkno, int index, DirEntry *pEntry)
+void PutDirEntry(int blkno, int index, DirEntry *pEntry)    // 지정한 주소의 디렉토리 엔트리를 디스크에 넣는다.
 {
+    if(index >= 16) return;
     DirEntry *ptr = malloc(BLOCK_SIZE);
-    DevReadBlock(blkno, (char *)ptr);
+    DevReadBlock(blkno, ptr);
     memcpy(ptr + index, pEntry, sizeof(DirEntry));
     DevWriteBlock(blkno, ptr);
     free(ptr);
 }
 
-int GetDirEntry(int blkno, int index, DirEntry *pEntry)
+int GetDirEntry(int blkno, int index, DirEntry *pEntry) // 디렉토리 엔트리를 지정한 주소로 가져온다. invalid entry 일 시 -1을 반환한다.
 {
+    if(index >= 16) return INVALID_ENTRY;
     DirEntry *ptr = malloc(BLOCK_SIZE);
-    DevReadBlock(blkno, (char *)ptr);
-    int rt = (ptr + index)->inodeNum == INVALID_ENTRY ? INVALID_ENTRY : 1;
+    DevReadBlock(blkno, ptr);
+    if(ptr[index].inodeNum == INVALID_ENTRY){
+        return INVALID_ENTRY;
+    }
     memcpy(pEntry, ptr + index, sizeof(DirEntry));
     free(ptr);
-    return rt;
+    return 0;
 }
 
-void RemoveDirEntry(int blkno, int index)
+void RemoveDirEntry(int blkno, int index)   // 디스크 내 특정 디렉토리 엔트리를 invalid entry로 바꾼다.
 {
+    if(index >= 16) return;
     DirEntry *ptr = malloc(BLOCK_SIZE);
-    DevReadBlock(blkno, (char *)ptr);
-    (ptr + index)->inodeNum = INVALID_ENTRY;
+    DevReadBlock(blkno, ptr);
+    ptr[index].inodeNum = INVALID_ENTRY;
     DevWriteBlock(blkno, ptr);
     free(ptr);
 }
